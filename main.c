@@ -60,7 +60,7 @@ int main()
     return 0;
 }
 void openFile(FILE **fil,char *filname){
-    *fil = fopen(filname,"r+");
+    *fil = fopen(filname,"r+b");
 
     if(!*fil){
 
@@ -83,21 +83,28 @@ void openFile(FILE **fil,char *filname){
          Sleep(300);
 
         printf(".");
-        *fil = fopen(filname,"a+");
+        fclose(*fil);
+		
+		*fil = fopen(filname,"a+b");
+       
    
     /*inicia lista de posições disponiveis vázia */
 		
-		fprintf(*fil,"%d",-1);
+		fprintf(*fil,"%d ",-1);
         
         
     }
-
+    fclose(*fil);
+		
+	*fil = fopen(filname,"a+");
 }
 
 void dumpFile(FILE *fil){
-     char ch[tam];
+     
+	 char ch[tam];
      int i;
-     while(fgets(ch,tam,fil)!= NULL){
+     rewind(fil);
+	 while(fgets(ch,tam,fil)!= NULL){
        for(i=0;i<strlen(ch);i++){
            if(isprint(ch[i])){
                printf("%X ",ch[i]);
@@ -125,11 +132,14 @@ void insertFile(FILE* fil){
     gets(book.author);
     printf("\nYear:");
     gets(book.year);
-    regSize=strlen(strcat(strcat(strcat(book.author,book.ISBN),book.title),book.year));
+    regSize=strlen(book.ISBN) + strlen(book.author) + strlen(book.title) +strlen(book.year);
     rewind(fil);
     fscanf(fil,"%d",&list);
+    
+    printf("%d",list);
+    getch();
     if(list==-1){
-		fseek(fil,SEEK_END,SEEK_CUR);
+		fseek(fil,SEEK_END-SEEK_CUR,SEEK_CUR);
 		hashSfile(fil,regSize,book,0);
 		return;
 	}
@@ -148,7 +158,7 @@ void hashSfile(FILE *fil,int size_data,Livro book,int old){
 	
 	
 if(!old) {
-	fprintf(fil,"%d",size_data+3);
+	fprintf(fil,"%d",size_data+4);
 }else{
 	fseek(fil,sizeof(int),SEEK_CUR);
 }
@@ -160,6 +170,7 @@ if(!old) {
 	fputs(book.author,fil);
 	fputc('#',fil);
 	fputs(book.year,fil);
+	fputc('|',fil);
 	
 	
 	
