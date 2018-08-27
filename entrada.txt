@@ -1,0 +1,16 @@
+FILE* arq;....in
+t main(void) {..
+    char ch;....
+    if ((arq = f
+open("teste.txt"
+, "r")) == NULL)
+ {..        perr
+or("Erro");..   
+     return 1;..
+    }..    while
+ (fread(&ch, 1, 
+1, arq) != 0).. 
+       printf("%
+c", ch);..//    
+if (fwrite(&ch, 
+1, 1, arq) == 0)
