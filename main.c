@@ -11,20 +11,24 @@ typedef struct liv{
 }Livro;
 
 void openFile(FILE **fil,char *filname);
-void insertFile(FILE *fil);
+void insertFile(FILE* fil,int user , Livro book);
 void dumpFile(FILE *fil);
 void hashSfile(FILE *fil,int size_data,Livro book,int old);
+void read_booklist(FILE *fil, FILE *bklist);
 
 int main()
 {
     char opc;
-    FILE *file=NULL;
-    char filename[100];
+    FILE *file=NULL,*bklist=NULL;
+    char filename[100], booklist[100];
+    Livro book;
 
-    do{ system("COLOR 0A");
+    do{ 
+		
+		system("COLOR 0A");
         system("cls");
         printf("LIBRARY FILE MANAGER\n\n\n");
-        printf(" [1]-INSERT INTO FILE\n\n [4]-Load FILE\n\n [5]-Dump FILE\n\n [e]-Close FILE & exit \n");
+        printf(" [1]-INSERT INTO FILE\n\n [4]-Load FILE\n\n [5]-Dump FILE \n\n [6] - Load Book List\n\n [e]-Close FILE & exit \n");
         opc=getch();
 
         switch(opc){
@@ -32,7 +36,7 @@ int main()
 
             	if(file){
 
-                	insertFile(file);
+                	insertFile(file,1,book);
           			break;
 				}
 				system("cls");
@@ -48,10 +52,39 @@ int main()
                 openFile(&file,filename);
                 rewind(file);
                 break;
-            case '5':
+            
+			case '5':
                 dumpFile(file);
                 getch();
                 system("cls");
+                break;
+            
+			case '6':
+                
+                system("cls");
+                
+				printf("FILE NAME (book list): ");
+                gets(booklist);
+                if((bklist=fopen(booklist,"r"))!=NULL && file!=NULL){
+                	
+                	rewind(bklist);
+                	rewind(file);
+                	read_booklist(file,bklist);
+                	
+                	
+                	
+                	
+                	
+                	
+				}else {
+					
+					printf("List Not found or Principal file not founded !! \n\n Press Any key...");
+					
+					getch();
+					
+				}
+                
+                
                 break;
         }
 
@@ -70,14 +103,14 @@ void openFile(FILE **fil,char *filname){
 
 
         printf(".");
-         Sleep(1000);
+         Sleep(500);
 
         printf(".");
          Sleep(300);printf(".");
          Sleep(500);
 
         printf(".");
-         Sleep(1000);
+         Sleep(500);
 
         printf(".");
          Sleep(300);
@@ -105,7 +138,7 @@ void dumpFile(FILE *fil){
      int i;
      rewind(fil);
      system("cls");
-     printf("$$ DUMP OF FILE by:Calixtoguerreiro $$\n\n");
+     printf("$$ DUMP OF FILE      by:Calixtoguerreiro $$\n\n");
 	 while(fgets(ch,tam,fil)!= NULL){
        i=0;
        while(i<tam){
@@ -133,20 +166,22 @@ void dumpFile(FILE *fil){
 
 }
 
-void insertFile(FILE* fil){
-    Livro book;
+void insertFile(FILE* fil, int user, Livro book){
+    
     int regSize,list;
-
+	
     system("cls");
-
-	printf("ISBN:");
-    gets(book.ISBN);
-    printf("\nTitle:");
-    gets(book.title);
-    printf("\nAuthor:");
-    gets(book.author);
-    printf("\nYear:");
-    gets(book.year);
+	if(user){
+		
+		printf("ISBN:");
+	    gets(book.ISBN);
+	    printf("\nTitle:");
+	    gets(book.title);
+	    printf("\nAuthor:");
+	    gets(book.author);
+	    printf("\nYear:");
+	    gets(book.year);
+	}
     regSize=strlen(book.ISBN) + strlen(book.author) + strlen(book.title) +strlen(book.year); // Soma de todos os tamanhos de strings da STRUCT
     rewind(fil);
     fscanf(fil,"%d",&list); //Recebe primeiro inteiro do arquivo que indica a primeira posição da lista (-1 se a lista estiver vazia)
@@ -154,7 +189,7 @@ void insertFile(FILE* fil){
 
     if(list==-1){
     	printf("Livro Salvo !!\a");
-    	Sleep(2000);
+    	
 		fseek(fil,SEEK_END-SEEK_CUR,SEEK_CUR); //Rola para o fim do arquivo atual
 		hashSfile(fil,regSize,book,0);
 		return;
@@ -211,4 +246,21 @@ if(!old) {
 
 
 
+}
+
+void read_booklist(FILE *fil, FILE *bklist){
+	
+	Livro book;
+	int i=0;
+	while(	fread(book.ISBN,sizeof(book.ISBN),1,bklist) ){
+		
+		fread(book.title,sizeof(book.title),1,bklist);
+		fread(book.author,sizeof(book.author),1,bklist);
+		fread(book.year,sizeof(book.year),1,bklist);
+		insertFile(fil,0,book);
+		i++;
+	}
+	
+
+	
 }
