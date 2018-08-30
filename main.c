@@ -2,7 +2,7 @@
 #include<string.h>
 #include <stdlib.h>
 #include <windows.h>
-#define tam 25
+#define tam 40
 
 typedef struct liv
 {
@@ -22,8 +22,8 @@ char* init_string(char *str, char w);
 int main()
 {
     char opc;
-    FILE *file=NULL,*bklist=NULL;
-    char filename[100], booklist[100];
+    FILE *file=NULL,*bklist=NULL, *last;
+    char filename[50], booklist[50],lastfile[]="last.bin",defaultfile[]="library.bin";
     Livro book;
 
     do
@@ -32,7 +32,7 @@ int main()
         system("COLOR 0A");
         system("cls");
         printf("LIBRARY FILE MANAGER\n\n\n");
-        printf(" [1]-INSERT INTO FILE\n\n [3]-Remove a register from the file\n\n [4]-Load FILE\n\n [5]-Dump FILE \n\n [6]-Load Book List\n\n [e]-Close FILE & exit \n");
+        printf(" [1]-INSERT INTO FILE\n\n [3]-Remove a register from the file\n\n [4]-Load FILE\n\n [5]-Dump FILE \n\n [6]-Load Book List \n\n [r]-Open Last File\n\n [e]-Close FILE & exit \n");
         opc=getch();
 
         switch(opc)
@@ -66,6 +66,10 @@ int main()
             gets(filename);
             openFile(&file,filename);
             rewind(file);
+            last = fopen(lastfile,"w+b");
+            rewind(last);
+            fwrite(filename,sizeof(lastfile),1,last);
+            fclose(last);
             break;
 
         case '5':
@@ -110,6 +114,27 @@ int main()
 
 
             break;
+        case 'r':
+        	
+        	last = fopen(lastfile,"rb");
+        	if(last){
+			
+				rewind(last);
+        	
+				fgets(filename,sizeof(lastfile),last);
+        	
+        		openFile(&file,filename);
+            	rewind(file);
+         	   	fclose(last);
+        	}else{
+        		
+        		openFile(&file,defaultfile);
+            	rewind(file);
+         	   	fclose(last);
+        		
+        		
+			}
+        break;
         }
 
     }
@@ -188,7 +213,7 @@ void dumpFile(FILE *fil)
 
         }
         ch2[i-1]='\0';
-		strcpy(ch,init_string(ch,'.'));
+		strcpy(ch,init_string(ch,' '));
         printf("  %s\n",ch2);
         
 
