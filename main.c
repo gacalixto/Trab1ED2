@@ -2,7 +2,7 @@
 #include<string.h>
 #include <stdlib.h>
 #include <windows.h>
-#define tam 50
+#define tam 25
 
 typedef struct liv
 {
@@ -17,6 +17,7 @@ void hashSfile(FILE *fil,int size_data,Livro book,int old);
 void read_booklist(FILE *fil, FILE *bklist);
 void removeFile(FILE *fil);
 int searchFile(FILE *fil);
+char* init_string(char *str, char w);
 
 int main()
 {
@@ -31,7 +32,7 @@ int main()
         system("COLOR 0A");
         system("cls");
         printf("LIBRARY FILE MANAGER\n\n\n");
-        printf(" [1]-INSERT INTO FILE\n\n [3]-Remove a register from the file\n\n [4]-Load FILE\n\n [5]-Dump FILE \n\n [6] - Load Book List\n\n [e]-Close FILE & exit \n");
+        printf(" [1]-INSERT INTO FILE\n\n [3]-Remove a register from the file\n\n [4]-Load FILE\n\n [5]-Dump FILE \n\n [6]-Load Book List\n\n [e]-Close FILE & exit \n");
         opc=getch();
 
         switch(opc)
@@ -162,7 +163,7 @@ void openFile(FILE **fil,char *filname)
 void dumpFile(FILE *fil)
 {
 
-    char ch[tam],ch2[tam];
+    char ch[tam],ch2[tam],c[tam];
     int i;
     rewind(fil);
     system("cls");
@@ -170,11 +171,11 @@ void dumpFile(FILE *fil)
     while(fgets(ch,tam,fil)!= NULL)
     {
         i=0;
-        while(i<tam)
+        while(i<tam-1)
         {
             if(isprint(ch[i]))
             {
-                printf("%1X ",ch[i]);
+                printf("%X ",ch[i]);
                 ch2[i]=ch[i];
             }
             else if(!isprint(ch[i]))
@@ -187,8 +188,9 @@ void dumpFile(FILE *fil)
 
         }
         ch2[i-1]='\0';
-
+		strcpy(ch,init_string(ch,'.'));
         printf("  %s\n",ch2);
+        
 
     }
     printf("\n");
@@ -392,4 +394,19 @@ void read_booklist(FILE *fil, FILE *bklist)
 
 
 
+}
+
+char* init_string(char *str,char w){
+	int i;
+	
+	for(i=0;i<tam-1;i++){
+		
+		str[i]=w;
+		
+		
+	}
+	str[i]='\0';
+	
+	
+	return str;
 }
