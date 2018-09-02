@@ -53,7 +53,11 @@ int main()
         case '3':
             system("cls");
             if(file)
+            {
+                rewind(file);
                 removeFile(file);
+            }
+
             else{
                 printf("File Not Open!\nPress any key to go back to the menu!\n");
                 getch();
@@ -115,24 +119,24 @@ int main()
 
             break;
         case 'r':
-        	
+
         	last = fopen(lastfile,"rb");
         	if(last){
-			
+
 				rewind(last);
-        	
+
 				fgets(filename,sizeof(lastfile),last);
-        	
+
         		openFile(&file,filename);
             	rewind(file);
          	   	fclose(last);
         	}else{
-        		
+
         		openFile(&file,defaultfile);
             	rewind(file);
          	   	fclose(last);
-        		
-        		
+
+
 			}
         break;
         }
@@ -215,7 +219,7 @@ void dumpFile(FILE *fil)
         ch2[i-1]='\0';
 		strcpy(ch,init_string(ch,' '));
         printf("  %s\n",ch2);
-        
+
 
     }
     printf("\n");
@@ -292,7 +296,9 @@ void hashSfile(FILE *fil,int size_data,Livro book,int old)
 
     if(!old)
     {
-        fprintf(fil,"%d",size_data+4);
+        //fprintf(fil,"%d",size_data+4);
+        size_data=size_data+4;
+        fwrite(&size_data,sizeof(int),1,fil);
     }
     else
     {
@@ -319,18 +325,20 @@ int searchFile(FILE*fil)
     /*Função para percorrer o arquivo e encontrar o ISBN desejado
         que retorna um número equivalente à posição do registro
     */
-    int pos,count,ct,achou,tamreg,tamcampo;
-    char registro[60],campo[26],ISBN[14];
+    int pos,count=0,ct,list,achou=0,tamreg,tamcampo,ptnext;
+    char registro[60],campo[26],ISBN[14],cha;
     printf("ISBN:");
     gets(ISBN);
+    fseek(fil,sizeof(char)*3,SEEK_CUR);
+
+
+
     tamreg = pega_registro(fil,registro);
     while(achou!=1&&tamreg>0)
     {
         pos=0;
-        count=0;
-        ct=0;
         tamcampo = get_field(registro,&pos,campo);
-        if(strcmp(ISBN,campo))
+        if(strcmp(ISBN,campo)==0)
             achou=1;
         else
         {
@@ -373,11 +381,12 @@ void removeFile(FILE *fil)
 
 int pega_registro(FILE *p_out, char *p_reg)
 {
-     int bytes;
+    char cha;
+     int bytes=0;
 
      if (!fread(&bytes, sizeof(int), 1, p_out))
        return 0;
-     else {
+     else if(bytes<=60){
             fread(p_reg, bytes, 1, p_out);
             return bytes;
           }
@@ -423,15 +432,15 @@ void read_booklist(FILE *fil, FILE *bklist)
 
 char* init_string(char *str,char w){
 	int i;
-	
+
 	for(i=0;i<tam-1;i++){
-		
+
 		str[i]=w;
-		
-		
+
+
 	}
 	str[i]='\0';
-	
-	
+
+
 	return str;
 }
