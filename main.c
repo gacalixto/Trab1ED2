@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <windows.h>
 #define tam 40
+// Autores:Gabriel Calixto e Leonardo Bezerra
 
 typedef struct liv
 {
@@ -16,7 +17,7 @@ void dumpFile(FILE *fil);
 void hashSfile(FILE *fil,int size_data,Livro book,int old);
 void read_booklist(FILE *fil, FILE *bklist);
 void removeFile(FILE *fil);
-int searchFile(FILE *fil);
+int searchRegister(FILE*fil,char *ISBN);
 char* init_string(char *str, char w);
 
 int main()
@@ -273,6 +274,7 @@ void insertFile(FILE* fil, int user, Livro book)
 
 }
 
+
 void hashSfile(FILE *fil,int size_data,Livro book,int old)
 {
 
@@ -296,7 +298,7 @@ void hashSfile(FILE *fil,int size_data,Livro book,int old)
 
     if(!old)
     {
-        //fprintf(fil,"%d",size_data+4);
+        //fprintf(fil,"%d",size_data+4);isso aqui não estava funcionando, o fseek nao conseguia pular isso por algum motivo
         size_data=size_data+4;
         fwrite(&size_data,sizeof(int),1,fil);
     }
@@ -320,19 +322,14 @@ void hashSfile(FILE *fil,int size_data,Livro book,int old)
 
 
 }
-int searchFile(FILE*fil)
+int searchRegister(FILE *fil,char *ISBN)
 {
     /*Função para percorrer o arquivo e encontrar o ISBN desejado
         que retorna um número equivalente à posição do registro
     */
     int pos,count=0,ct,list,achou=0,tamreg,tamcampo,ptnext;
-    char registro[60],campo[26],ISBN[14],cha;
-    printf("ISBN:");
-    gets(ISBN);
+    char registro[60],campo[26],cha;
     fseek(fil,sizeof(char)*3,SEEK_CUR);
-
-
-
     tamreg = pega_registro(fil,registro);
     while(achou!=1&&tamreg>0)
     {
@@ -340,6 +337,7 @@ int searchFile(FILE*fil)
         tamcampo = get_field(registro,&pos,campo);
         if(strcmp(ISBN,campo)==0)
             achou=1;
+
         else
         {
             tamreg = pega_registro(fil,registro);
@@ -360,11 +358,16 @@ void removeFile(FILE *fil)
 {
     char ISBN[14];
     int proc=0;
-    proc = searchFile(fil);
+    printf("ISBN:");
+    gets(ISBN);
+    proc = searchRegister(fil,ISBN);
     if(proc!=-2)
     {
         printf("ISBN found!\nPress any key to continue");
         getch();
+        fwrite('*',sizeof(char),1,fil);//isso não está funcionando ainda
+        rewind(fil);
+        fprintf(fil,"%d ",proc);
 
     }
     else
