@@ -19,10 +19,13 @@ void read_booklist(FILE *fil, FILE *bklist);
 void removeFile(FILE *fil);
 int searchRegister(FILE*fil,char *ISBN);
 char* init_string(char *str, char w);
+void print_book(Livro book);
+int positInfile(FILE *fil, int position);
 
 int main()
 {
     char opc;
+    
     FILE *file=NULL,*bklist=NULL, *last;
     char filename[50], booklist[50],lastfile[]="last.bin",defaultfile[]="library.bin";
     Livro book;
@@ -148,7 +151,8 @@ int main()
     return 0;
 }
 void openFile(FILE **fil,char *filname)
-{
+{	
+	int init =-1;
     *fil = fopen(filname,"r+b");
 
     if(!*fil)
@@ -181,7 +185,7 @@ void openFile(FILE **fil,char *filname)
 
         /*inicia lista de posições disponiveis vázia */
 
-        fprintf(*fil,"%d ",-1);
+        fwrite(&init,sizeof(int),1,*fil);
 
 
     }
@@ -234,10 +238,10 @@ void insertFile(FILE* fil, int user, Livro book)
 
     int regSize,list;
 
-    system("cls");
+    
     if(user)
     {
-
+		system("cls");
         printf("ISBN:");
         gets(book.ISBN);
         printf("\nTitle:");
@@ -249,12 +253,12 @@ void insertFile(FILE* fil, int user, Livro book)
     }
     regSize=strlen(book.ISBN) + strlen(book.author) + strlen(book.title) +strlen(book.year); // Soma de todos os tamanhos de strings da STRUCT
     rewind(fil);
-    fscanf(fil,"%d",&list); //Recebe primeiro inteiro do arquivo que indica a primeira posição da lista (-1 se a lista estiver vazia)
-
+     
+	fread(&list,sizeof(int),1,fil);//Recebe primeiro inteiro do arquivo que indica a primeira posição da lista (-1 se a lista estiver vazia)
 
     if(list==-1)
     {
-        printf("Livro Salvo !!\a");
+        printf("Livro Salvo\n !!\a");
 
         fseek(fil,SEEK_END-SEEK_CUR,SEEK_CUR); //Rola para o fim do arquivo atual
         hashSfile(fil,regSize,book,0);
@@ -329,7 +333,8 @@ int searchRegister(FILE *fil,char *ISBN)
     */
     int pos,count=0,ct,list,achou=0,tamreg,tamcampo,ptnext;
     char registro[60],campo[26],cha;
-    fseek(fil,sizeof(char)*3,SEEK_CUR);
+    rewind(fil);
+    fseek(fil,sizeof(char)*4,SEEK_CUR);
     tamreg = pega_registro(fil,registro);
     while(achou!=1&&tamreg>0)
     {
@@ -356,18 +361,29 @@ int searchRegister(FILE *fil,char *ISBN)
 
 void removeFile(FILE *fil)
 {
-    char ISBN[14];
-    int proc=0;
+    char ISBN[14],reg[60],*stringnull;
+    int proc=0,bytesproc=0,firstposition;
     printf("ISBN:");
     gets(ISBN);
     proc = searchRegister(fil,ISBN);
+    
     if(proc!=-2)
-    {
-        printf("ISBN found!\nPress any key to continue");
+    {	rewind(fil);
+    	fread(&firstposition,sizeof(int),1,fil);
+    	rewind(fil);
+    	bytesproc= positInfile(fil,proc);
+    	stringnull = (char*)malloc(sizeof(char)*(bytesproc));
+    	
+    	init_string(stringnull,'.');
+    	
+    	fprintf(fil,"%s",stringnull);
+    	rewind(fil);
+    	fwrite(&proc,sizeof(int),1,fil);
+    	printf("ISBN found! \n Press any key to continue");
         getch();
-        fwrite('*',sizeof(char),1,fil);//isso não está funcionando ainda
+        //fwrite('*',sizeof(char),1,fil);//isso não está funcionando ainda
         rewind(fil);
-        fprintf(fil,"%d ",proc);
+        //fprintf(fil,"%d ",proc);
 
     }
     else
@@ -386,6 +402,7 @@ int pega_registro(FILE *p_out, char *p_reg)
 {
     char cha;
      int bytes=0;
+     
 
      if (!fread(&bytes, sizeof(int), 1, p_out))
        return 0;
@@ -418,7 +435,8 @@ void read_booklist(FILE *fil, FILE *bklist)
 {
 
     Livro book;
-    int i=0;
+	system("cls");
+	printf("Add BOOK \n\n");
     while(	fread(book.ISBN,sizeof(book.ISBN),1,bklist) )
     {
 
@@ -426,10 +444,13 @@ void read_booklist(FILE *fil, FILE *bklist)
         fread(book.author,sizeof(book.author),1,bklist);
         fread(book.year,sizeof(book.year),1,bklist);
         insertFile(fil,0,book);
-        i++;
+        
+		print_book(book);
+        
     }
 
-
+	printf("Press Any Key...");
+	getch();
 
 }
 
@@ -446,4 +467,42 @@ char* init_string(char *str,char w){
 
 
 	return str;
+}
+
+void print_book(Livro book){
+	
+	printf("ISBN: %s \n",book.ISBN);
+	printf("Title: %s \n ",book.title);
+	printf("Author:  %s \n",book.author);
+	printf("Year: %s\n\n",book.year);
+	
+	
+	
+	
+}
+
+int positInfile(FILE *fil, int position){
+	
+	//Essa Função Recebe uma posição e anda no arquivo até encontrar a posição
+	
+	int bytes,i=0,end;
+	rewind(fil);
+	fseek(fil,sizeof(int),SEEK_CUR);
+	
+	while(fread(&bytes,sizeof(int),1,fil)!=EOF && i<position){
+		
+		printf("skip Bytes: %d\n",bytes);
+		fseek(fil,sizeof(char)*bytes,SEEK_CUR);
+		i++;
+		
+	}
+	
+	printf("Position Bytes: %d\n",bytes);
+	
+	return bytes;
+	
+	
+	
+	
+	
 }
